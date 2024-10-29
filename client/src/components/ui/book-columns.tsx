@@ -6,12 +6,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Book } from "@/types/Index";
+import { Book } from "@/types/index";
 
 import { ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontal } from "lucide-react";
 import EditBook from "../EditBook";
-import DeleteBook from "../deleteBook";
+import DeleteBook from "../DeleteBook";
 
 export const bookColumns: ColumnDef<Book>[] = [
   {

@@ -1,4 +1,4 @@
-import { Book } from "@/types/Index";
+import { Book } from "@/types/index";
 import {
   AlertDialog,
   AlertDialogAction,

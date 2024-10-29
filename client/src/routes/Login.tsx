@@ -1,9 +1,41 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+
+const base_url = import.meta.env.VITE_SERVER_URL;
 
 const Login = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const response = await fetch(`${base_url}/login?useCookies=true`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+        credentials: "include",
+      });
+
+      if (response.ok) {
+        // Handle login success
+        navigate("/books");
+      } else {
+        // Handle login failure
+        alert("Login failed. Please check your credentials and try again.");
+      }
+    } catch (error) {
+      console.error("Error during login:", error);
+      alert("An error occurred. Please try again later.");
+    }
+  };
+
   return (
     <div className="mx-auto grid w-[350px] gap-6">
       <div className="grid gap-2 text-center">
@@ -12,7 +44,7 @@ const Login = () => {
           Enter your email below to login to your account
         </p>
       </div>
-      <form>
+      <form onSubmit={handleSubmit}>
         <div className="grid gap-4">
           <div className="grid gap-2">
             <Label htmlFor="email">Email</Label>
@@ -21,6 +53,8 @@ const Login = () => {
               name="email"
               type="email"
               placeholder="m@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               required
             />
           </div>
@@ -34,9 +68,16 @@ const Login = () => {
                 Forgot your password?
               </Link>
             </div>
-            <Input id="password" name="password" type="password" required />
+            <Input
+              id="password"
+              name="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
           </div>
-          <Button className="w-full">Login</Button>
+          <Button type="submit" className="w-full">Login</Button>
         </div>
       </form>
       <div className="mt-4 text-center text-sm">
@@ -48,4 +89,5 @@ const Login = () => {
     </div>
   );
 };
+
 export default Login;

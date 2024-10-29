@@ -8,6 +8,7 @@ import AuthLayout from "./routes/AuthLayout";
 import Login from "./routes/Login";
 import Register from "./routes/Register";
 import Books from "./routes/Books";
+import { Toaster } from "@/components/ui/toaster"
 
 const router = createBrowserRouter([
   {
@@ -40,5 +41,6 @@ const router = createBrowserRouter([
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <RouterProvider router={router} />
+    <Toaster />
   </StrictMode>
 );
