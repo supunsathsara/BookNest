@@ -10,8 +10,30 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.Cookie.SameSite = SameSiteMode.None; // Allows cross-site cookies
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always; // Requires HTTPS
+});
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowReactApp",
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:5173") // React app URL
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials(); // Needed for cookies
+        });
+    
+   
+});
+
 // Configure authentication and authorization
-builder.Services.AddAuthentication().AddBearerToken(IdentityConstants.BearerScheme);
+//builder.Services.AddAuthentication().AddBearerToken(IdentityConstants.BearerScheme);
+builder.Services.AddAuthentication().AddCookie(IdentityConstants.ApplicationScheme);
 builder.Services.AddAuthorizationBuilder();
 
 // Configure database context
@@ -31,7 +53,14 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseStaticFiles();
+app.UseRouting();
 app.UseHttpsRedirection();
+app.UseCors("AllowReactApp");
+app.UseAuthorization();
+
+
+
 
 // Map identity API
 app.MapIdentityApi<User>();
@@ -56,7 +85,9 @@ app.MapPost("/api/books", async (AppDbContext db, Book book, ClaimsPrincipal use
     await db.SaveChangesAsync();
 
     return Results.Created($"/api/books/{book.Id}", book);
-}).RequireAuthorization();
+}).RequireAuthorization()
+.RequireCors("AllowReactApp");
+    
 
 // Endpoint to get books created by the current user
 app.MapGet("/api/books", async (AppDbContext db, ClaimsPrincipal user) =>
@@ -70,7 +101,8 @@ app.MapGet("/api/books", async (AppDbContext db, ClaimsPrincipal user) =>
 
     var books = await db.Books.Where(b => b.CreatedBy == userName).ToListAsync();
     return Results.Ok(books);
-}).RequireAuthorization();
+}).RequireAuthorization()
+.RequireCors("AllowReactApp");
 
 // Endpoint to get a specific book by ID
 app.MapGet("/api/books/{id}", async (int id, AppDbContext db, ClaimsPrincipal user) =>
