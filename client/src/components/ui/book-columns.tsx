@@ -43,6 +43,17 @@ export const bookColumns: ColumnDef<Book>[] = [
   {
     accessorKey: "createdAt",
     header: "Created At",
+    cell: ({ row }) => {
+      const book = row.original;
+
+      return (
+        <div className="flex items-center space-x-2">
+          <p className="text-sm text-gray-500">
+            {new Date(book.createdAt).toLocaleString()}
+          </p>
+        </div>
+      );
+    },
   },
   {
     id: "actions",
