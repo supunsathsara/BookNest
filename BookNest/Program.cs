@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using BookNest.Data;
 using BookNest.model;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -34,6 +35,7 @@ builder.Services.AddCors(options =>
 // Configure authentication and authorization
 //builder.Services.AddAuthentication().AddBearerToken(IdentityConstants.BearerScheme);
 builder.Services.AddAuthentication().AddCookie(IdentityConstants.ApplicationScheme);
+
 builder.Services.AddAuthorizationBuilder();
 
 // Configure database context
@@ -43,6 +45,20 @@ builder.Services.AddDbContext<AppDbContext>(x => x.UseSqlite(builder.Configurati
 builder.Services.AddIdentityCore<User>()
     .AddEntityFrameworkStores<AppDbContext>()
     .AddApiEndpoints();
+
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.Events.OnRedirectToLogin = context =>
+    {
+        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+        return Task.CompletedTask;
+    };
+    options.Events.OnRedirectToAccessDenied = context =>
+    {
+        context.Response.StatusCode = StatusCodes.Status403Forbidden;
+        return Task.CompletedTask;
+    };
+});
 
 var app = builder.Build();
 
@@ -57,6 +73,7 @@ app.UseStaticFiles();
 app.UseRouting();
 app.UseHttpsRedirection();
 app.UseCors("AllowReactApp");
+app.UseAuthentication();
 app.UseAuthorization();
 
 
