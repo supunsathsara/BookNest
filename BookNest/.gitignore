@@ -485,3 +485,5 @@ $RECYCLE.BIN/
 
 
 app.db
+app.db-wal
+app.db-shm
