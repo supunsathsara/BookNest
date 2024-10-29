@@ -12,9 +12,8 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { Pencil2Icon } from "@radix-ui/react-icons";
-
-
-const base_url = import.meta.env.VITE_SERVER_URL;
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { addBook } from "@/lib/api";
 
 const bookSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -22,19 +21,45 @@ const bookSchema = z.object({
   description: z.string().min(1, "Description is required"),
 });
 
-interface NewBookProps {
-  onBookAdded: () => void;
-}
-
-const NewBook = ({ onBookAdded }: NewBookProps) => {
+const NewBook = () => {
   const [title, setTitle] = useState("");
   const [author, setAuthor] = useState("");
   const [description, setDescription] = useState("");
   const [open, setOpen] = useState(false);
 
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  const handleSubmit = async () => {
+  const mutation = useMutation({
+    mutationFn: (newBook: {
+      title: string;
+      author: string;
+      description: string;
+    }) => {
+      return addBook(newBook);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["books"] });
+      setOpen(false);
+      setTitle("");
+      setAuthor("");
+      setDescription("");
+      toast({
+        title: "Book Added",
+        description: `The book "${title}" has been added successfully`,
+      });
+    },
+    onError: (error) => {
+      console.error("Error adding book:", error);
+      toast({
+        title: "Error",
+        description: "An error occurred. Please try again later.",
+      });
+    },
+  });
+
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
     const validation = bookSchema.safeParse({ title, author, description });
 
     if (!validation.success) {
@@ -47,41 +72,7 @@ const NewBook = ({ onBookAdded }: NewBookProps) => {
       return;
     }
 
-    try {
-      const response = await fetch(`${base_url}/api/books`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({ title, author, description }),
-      });
-
-      if (response.ok) {
-        // Close the dialog
-        setOpen(false);
-        setTitle("");
-        setAuthor("");
-        setDescription("");
-
-        toast({
-          title: "Book Added",
-          description: `The book "${title}" has been added successfully`,
-        });
-        onBookAdded(); // Reload the book list
-      } else {
-        toast({
-          title: "Error",
-          description: "Failed to add the book",
-        });
-      }
-    } catch (error) {
-      console.error("Error adding book:", error);
-      toast({
-        title: "Error",
-        description: "An error occurred. Please try again later.",
-      });
-    }
+    mutation.mutate({ title, author, description });
   };
 
   return (
@@ -94,41 +85,43 @@ const NewBook = ({ onBookAdded }: NewBookProps) => {
       </DialogTrigger>
 
       <DialogContent>
-        <div className="grid gap-4">
-          <div className="grid gap-2">
-            <Label htmlFor="title">Title</Label>
-            <Input
-              id="title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-            />
+        <form onSubmit={handleSubmit}>
+          <div className="grid gap-4">
+            <div className="grid gap-2">
+              <Label htmlFor="title">Title</Label>
+              <Input
+                id="title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="author">Author</Label>
+              <Input
+                id="author"
+                value={author}
+                onChange={(e) => setAuthor(e.target.value)}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="description">Description</Label>
+              <Input
+                id="description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="col-span-3"
+              />
+            </div>
           </div>
-          <div className="grid gap-2">
-            <Label htmlFor="author">Author</Label>
-            <Input
-              id="author"
-              value={author}
-              onChange={(e) => setAuthor(e.target.value)}
-            />
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="description">Description</Label>
-            <Input
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="col-span-3"
-            />
-          </div>
-        </div>
-        <DialogFooter>
-          <Button type="submit" onClick={handleSubmit}>
-            Add Book
-          </Button>
-          <DialogClose asChild>
-            <Button variant="ghost">Cancel</Button>
-          </DialogClose>
-        </DialogFooter>
+          <DialogFooter>
+            <Button type="submit" disabled={mutation.isPending}>
+              {mutation.isPending ? "Adding..." : "Add Book"}
+            </Button>
+            <DialogClose asChild>
+              <Button variant="ghost">Cancel</Button>
+            </DialogClose>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );

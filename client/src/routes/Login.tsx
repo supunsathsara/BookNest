@@ -3,37 +3,40 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Link, useNavigate } from "react-router-dom";
-
-const base_url = import.meta.env.VITE_SERVER_URL;
+import { useToast } from "@/hooks/use-toast";
+import { useMutation } from "@tanstack/react-query";
+import { loginUser } from "@/lib/api";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+  const { toast } = useToast();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const response = await fetch(`${base_url}/login?useCookies=true`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-        credentials: "include",
+  const mutation = useMutation({
+    mutationFn: (user: { email: string; password: string }) => {
+      return loginUser(user);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Login Successful",
+        description: "You have successfully logged in.",
       });
-
-      if (response.ok) {
-        // Handle login success
-        navigate("/books");
-      } else {
-        // Handle login failure
-        alert("Login failed. Please check your credentials and try again.");
-      }
-    } catch (error) {
+      navigate("/books");
+    },
+    onError: (error) => {
       console.error("Error during login:", error);
-      alert("An error occurred. Please try again later.");
-    }
+      toast({
+        title: "Error",
+        description:
+          "Login failed. Please check your credentials and try again.",
+      });
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    mutation.mutate({ email, password });
   };
 
   return (
@@ -77,7 +80,13 @@ const Login = () => {
               required
             />
           </div>
-          <Button type="submit" className="w-full">Login</Button>
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={mutation.isPending}
+          >
+            {mutation.isPending ? "Logging in..." : "Login"}
+          </Button>
         </div>
       </form>
       <div className="mt-4 text-center text-sm">

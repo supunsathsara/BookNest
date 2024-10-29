@@ -1,36 +1,25 @@
-import { useEffect, useState } from "react";
 import NewBook from "@/components/NewBook";
 import { bookColumns } from "@/components/ui/book-columns";
 import { BookTable } from "@/components/ui/book-table";
+import { fetchBooks } from "@/lib/api";
+import { useQuery } from "@tanstack/react-query";
 import { Book } from "@/types/index";
-
-const base_url = import.meta.env.VITE_SERVER_URL;
+import { useNavigate } from "react-router-dom";
 
 const Books = () => {
-  const [books, setBooks] = useState<Book[]>([]);
+  const navigate = useNavigate();
+  const { data: books, error, isLoading } = useQuery<Book[], Error>({
+    queryKey: ["books"], // Use array for queryKey
+    queryFn: () => fetchBooks(navigate),
+  });
 
-  const fetchBooks = async () => {
-    try {
-      const response = await fetch(`${base_url}/api/books`, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setBooks(data);
-      } else {
-        console.error("Failed to fetch books");
-      }
-    } catch (error) {
-      console.error("Error fetching books:", error);
-    }
-  };
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
-  useEffect(() => {
-    fetchBooks();
-  }, []);
+  if (error) {
+    return <div>Error loading books</div>;
+  }
 
   return (
     <div className="min-h-screen w-full bg-primary-foreground p-8">
@@ -38,10 +27,10 @@ const Books = () => {
         <h1 className="text-4xl font-bold text-center">Library Books</h1>
       </header>
       <div className="mb-8">
-        <NewBook onBookAdded={fetchBooks} />
+        <NewBook />
       </div>
       <div>
-        <BookTable columns={bookColumns} data={books} />
+        <BookTable columns={bookColumns} data={books || []} />
       </div>
     </div>
   );

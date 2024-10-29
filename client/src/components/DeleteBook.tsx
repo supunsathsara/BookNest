@@ -11,8 +11,36 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { deleteBook } from "@/lib/api";
+import { useToast } from "@/hooks/use-toast";
 
 const DeleteBook: React.FC<{ book: Book }> = ({ book }) => {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: () => deleteBook(book.id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["books"] });
+      toast({
+        title: "Book Deleted",
+        description: `The book "${book.title}" has been deleted successfully.`,
+      });
+    },
+    onError: (error) => {
+      console.error("Mutation failed", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete the book",
+      });
+    },
+  });
+
+  const handleDelete = () => {
+    mutation.mutate();
+  };
+
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
@@ -30,12 +58,17 @@ const DeleteBook: React.FC<{ book: Book }> = ({ book }) => {
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-            Delete
+          <AlertDialogAction
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            onClick={handleDelete}
+            disabled={mutation.isPending}
+          >
+            {mutation.isPending ? "Deleting..." : "Delete"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
   );
 };
+
 export default DeleteBook;
