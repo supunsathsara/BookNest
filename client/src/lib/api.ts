@@ -44,6 +44,20 @@ export const loginUser = async (user: {
   }
 };
 
+
+export const logoutUser = async (): Promise<void> => {
+  const response = await fetch(`${base_url}/api/account/signout`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+  });
+  if (!response.ok) {
+    throw new Error("Failed to logout user");
+  }
+};
+
 export const fetchBooks = async (navigate: ReturnType<typeof useNavigate>): Promise<Book[]> => {
   const response = await fetch(`${base_url}/api/books`, {
     headers: {

@@ -5,6 +5,7 @@ import { fetchBooks } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
 import { Book } from "@/types/index";
 import { useNavigate } from "react-router-dom";
+import Logout from "@/components/Logout";
 
 const Books = () => {
   const navigate = useNavigate();
@@ -23,8 +24,9 @@ const Books = () => {
 
   return (
     <div className="min-h-screen w-full bg-primary-foreground p-8">
-      <header className="mb-8">
-        <h1 className="text-4xl font-bold text-center">Library Books</h1>
+      <header className="mb-8 flex justify-between items-center">
+        <h1 className="text-4xl font-bold">Book Nest</h1>
+        <Logout />
       </header>
       <div className="mb-8">
         <NewBook />

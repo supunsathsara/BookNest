@@ -85,6 +85,12 @@ app.MapIdentityApi<User>();
 // Test endpoint to get the current user's name
 app.MapGet("/hello", (ClaimsPrincipal user) => user.Identity!.Name).RequireAuthorization();
 
+app.MapPost("/api/account/signout", async (SignInManager<User> signInManager) =>
+{
+    await signInManager.SignOutAsync();
+    return Results.Ok();
+}).RequireCors("AllowReactApp");
+
 // Endpoint to create a new book
 app.MapPost("/api/books", async (AppDbContext db, Book book, ClaimsPrincipal user) =>
 {
