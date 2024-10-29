@@ -1,0 +1,6 @@
+﻿services:
+  booknest:
+    image: booknest
+    build:
+      context: .
+      dockerfile: BookNest/Dockerfile
