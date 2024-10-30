@@ -34,9 +34,11 @@ export default function Root() {
             available.
           </p>
           <div className="space-x-4">
+          <Link to="/register" className="text-whit">
             <Button className="bg-purple-600 hover:bg-purple-700">
               Get Started
             </Button>
+          </Link>
           </div>
         </div>
 

@@ -75,7 +75,7 @@ const Register = () => {
       <div className="grid gap-2 text-center">
         <h1 className="text-3xl font-bold">Register</h1>
         <p className="text-balance text-muted-foreground">
-          Enter your email below to get started with BookNest
+          Get started with BookNest
         </p>
       </div>
       <form onSubmit={handleSubmit}>
