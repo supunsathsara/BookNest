@@ -113,7 +113,7 @@ const NewBook = () => {
               />
             </div>
           </div>
-          <DialogFooter>
+          <DialogFooter className="mt-4">
             <Button type="submit" disabled={mutation.isPending}>
               {mutation.isPending ? "Adding..." : "Add Book"}
             </Button>
