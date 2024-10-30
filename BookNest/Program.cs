@@ -1,7 +1,6 @@
 using System.Security.Claims;
 using BookNest.Data;
 using BookNest.model;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
